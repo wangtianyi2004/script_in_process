@@ -1,0 +1,9 @@
+--查看统计信息的采样率
+
+SELECT owner,
+       table_name,
+       num_rows,
+       sample_size,
+       trunc(sample_size / num_rows * 100) estimate_percent 
+  FROM DBA_TAB_STATISTICS
+ WHERE owner='SCOTT' AND table_name='TEST';

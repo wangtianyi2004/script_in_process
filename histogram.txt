@@ -1,0 +1,25 @@
+-- 查看是否对列收集直方图
+
+select a.column_name,
+       b.num_rows,
+       a.num_distinct Cardinality,
+       round(a.num_distinct / b.num_rows * 100, 2) selectivity
+  from dba_tab_col_statistics a, dba_tables b
+ where a.owner = b.owner
+   and a.table_name = b.table_name
+   and a.owner = upper('SCOTT')
+   and a.table_name = upper('TEST')
+
+
+-- 单独对某列收集直方图
+
+BEGIN
+  DBMS_STATS.GATHER_TABLE_STATS(ownname          => 'SCOTT',
+                                tabname          => 'TEST',
+                                estimate_percent => 30,
+                                method_opt       => 'for owner columns size skewonly',
+                                no_invalidate    => FALSE,
+                                degree           => 1,
+                                cascade          => TRUE);
+END;
+/

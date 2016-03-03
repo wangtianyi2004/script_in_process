@@ -1,0 +1,14 @@
+exec dbms_stats.flush_database_monitoring_info;
+
+select owner, table_name name, object_type, stale_stats, last_analyzed
+  from dba_tab_statistics
+ where table_name in (table_name)
+   and owner = 'OWNER_NAME'
+   and (stale_stats = 'YES' or last_analyzed is null);
+
+
+-- 过期的统计信息
+SELECT /*+ UNNEST */ DISTINCT TABLE_NAME
+                      FROM DBA_TAB_STATISTICS
+                     WHERE (LAST_ANALYZED IS NULL OR STALE_STATS = 'YES')
+                       AND OWNER = 'ADWU_OPTIMA_AP11')   只收集统计信息失效的

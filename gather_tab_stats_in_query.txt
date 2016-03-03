@@ -1,0 +1,38 @@
+exec dbms_stats.flush_database_monitoring_info; ----刷新信息到磁盘
+
+--------------EXPLAIN PLAN FOR SQL, 然后执行下面语句得到表名字---------------------------
+select '''' || object_owner || '''', '''' || object_name || ''','
+  from plan_table
+ where object_type = 'TABLE'
+union
+---table in the index---------
+select '''' || table_owner || '''', '''' || table_name || '*'','
+  from dba_indexes
+ where owner in
+       (select distinct object_owner from plan_table where rownum > 0)
+   and index_name in
+       (select distinct object_name from plan_table where rownum > 0)
+order by 2;
+
+带*的表是根据索引查询出来的
+
+--------------再把上面的结果贴入下面代码-------------------------------------------------
+select owner, table_name name, object_type, stale_stats, last_analyzed
+  from dba_tab_statistics
+ where table_name in
+(
+table_name
+)
+and owner='owner'
+   and (stale_stats = 'YES' or last_analyzed is null);
+
+--------------如果 stale_stats=YES，想要知道是怎么过期的，运行下面代码-------------------
+select *
+  from all_tab_modifications
+ where table_owner='&owner'
+   and table_name in
+(
+table_name
+)
+   and (inserts > 0 or updates > 0 or deletes > 0)
+ order by table_name;
